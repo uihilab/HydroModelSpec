@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.hydromodelspec.org/hms-waterlevel/1.0/waterlevel.schema.json",
+  "title": "HydroModelSpec Water Level Forecasting Profile",
+  "description": "Domain profile for water level / stage forecasting models.",
+  "allOf": [
+    { "$ref": "../core/core.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "specVersion": {
+          "type": "string",
+          "pattern": "^hms-waterlevel@\\d+\\.\\d+$"
+        },
+        "evaluation": {
+          "type": "object",
+          "required": ["metrics", "splitUsed"],
+          "properties": {
+            "metrics": {
+              "type": "object",
+              "required": ["rmse", "mae"],
+              "properties": {
+                "rmse": { "type": "number", "minimum": 0 },
+                "mae": { "type": "number", "minimum": 0 }
+              }
+            },
+            "verticalDatum": {
+              "type": "string",
+              "enum": ["NAVD88", "NGVD29", "MSL", "MLLW", "Local"],
+              "description": "Vertical reference datum for water level values."
+            },
+            "tidalInfluence": {
+              "type": "boolean",
+              "description": "Whether gauge is tidally influenced."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

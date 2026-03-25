@@ -1,0 +1,504 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.hydromodelspec.org/hms-core/1.0/core.schema.json",
+  "title": "HydroModelSpec Core Schema",
+  "description": "Vendor-neutral specification for portable, privacy-preserving ML model artifacts in operational hydrology.",
+  "type": "object",
+  "required": [
+    "id",
+    "specVersion",
+    "name",
+    "createdAt",
+    "updatedAt",
+    "architecture",
+    "training",
+    "inputSchema",
+    "outputSchema",
+    "evaluation",
+    "weights",
+    "metadata"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Globally unique model identifier. Recommended format: hms-<uuid>.",
+      "pattern": "^hms-[a-zA-Z0-9_-]+$"
+    },
+    "specVersion": {
+      "type": "string",
+      "description": "HydroModelSpec version. Semantic versioning with namespace.",
+      "pattern": "^hms-[a-z]+@\\d+\\.\\d+$",
+      "examples": ["hms-core@1.0", "hms-streamflow@1.0"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable model name.",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "description": {
+      "type": "string",
+      "description": "Free-text model description and intended use."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC creation timestamp."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC last modification timestamp."
+    },
+    "architecture": { "$ref": "#/$defs/Architecture" },
+    "training": { "$ref": "#/$defs/Training" },
+    "inputSchema": { "$ref": "#/$defs/TensorSchema" },
+    "outputSchema": { "$ref": "#/$defs/TensorSchema" },
+    "evaluation": { "$ref": "#/$defs/Evaluation" },
+    "execution": { "$ref": "#/$defs/Execution" },
+    "privacy": { "$ref": "#/$defs/PrivacyAttestation" },
+    "weights": { "$ref": "#/$defs/Weights" },
+    "metadata": { "$ref": "#/$defs/Metadata" },
+    "links": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Link" },
+      "description": "Related resources (datasets, papers, APIs)."
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Discovery tags."
+    }
+  },
+
+  "$defs": {
+
+    "Architecture": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "CNN", "LSTM", "GRU", "TCN", "Transformer",
+            "CNN-LSTM", "CNN-GRU", "TCN-LSTM",
+            "XGBoost", "RandomForest", "Ensemble", "Custom"
+          ],
+          "description": "Architecture family."
+        },
+        "variant": {
+          "type": "string",
+          "description": "Specific variant (e.g., BiLSTM, DilatedTCN, ViT)."
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "units": { "type": "integer", "minimum": 1 },
+              "filters": { "type": "integer", "minimum": 1 },
+              "activation": { "type": "string" },
+              "dropout": { "type": "number", "minimum": 0, "maximum": 1 },
+              "kernelSize": { "type": "integer", "minimum": 1 },
+              "dilation": { "type": "integer", "minimum": 1 }
+            },
+            "required": ["type"]
+          },
+          "description": "Ordered layer definitions."
+        },
+        "hiddenSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Hidden dimension for recurrent/attention architectures."
+        },
+        "numLayers": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Depth (number of stacked layers)."
+        },
+        "kernelSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Convolution kernel size for CNN/TCN."
+        },
+        "dilationFactor": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Dilation factor for TCN architectures."
+        },
+        "attentionHeads": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of attention heads for Transformer."
+        },
+        "totalParams": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total trainable parameter count."
+        },
+        "framework": {
+          "type": "string",
+          "description": "Training framework (PyTorch, TensorFlow, NumPy, JAX)."
+        }
+      }
+    },
+
+    "Training": {
+      "type": "object",
+      "required": ["optimizer", "learningRate", "epochs", "lossFunction", "dataSplit"],
+      "additionalProperties": false,
+      "properties": {
+        "optimizer": {
+          "type": "string",
+          "enum": ["Adam", "AdamW", "SGD", "RMSprop", "Adagrad", "LBFGS"],
+          "description": "Optimizer name."
+        },
+        "learningRate": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Initial learning rate."
+        },
+        "epochs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of training epochs completed."
+        },
+        "batchSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Training batch size."
+        },
+        "lossFunction": {
+          "type": "string",
+          "enum": ["MSE", "MAE", "Huber", "NLL", "CrossEntropy", "Custom"],
+          "description": "Loss function."
+        },
+        "gradientClipping": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Max gradient norm threshold."
+        },
+        "sequenceLength": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Input sequence length (lookback window in timesteps)."
+        },
+        "dataSplit": {
+          "type": "object",
+          "required": ["train", "val", "test", "method"],
+          "properties": {
+            "train": { "type": "number", "minimum": 0, "maximum": 1 },
+            "val": { "type": "number", "minimum": 0, "maximum": 1 },
+            "test": { "type": "number", "minimum": 0, "maximum": 1 },
+            "method": {
+              "type": "string",
+              "enum": ["chronological", "random", "spatial", "k-fold"]
+            }
+          },
+          "description": "Split ratios and method."
+        },
+        "datasetHash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA-256 hash of training dataset."
+        },
+        "datasetRef": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI reference to source dataset (GIFIS entity or HydroShare)."
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Training start timestamp."
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Training completion timestamp."
+        },
+        "hardware": {
+          "type": "string",
+          "description": "Training hardware description."
+        },
+        "executionEnv": {
+          "type": "string",
+          "enum": ["local_cpu", "local_gpu", "cloud_gpu", "webgpu_browser"],
+          "description": "Where training executed."
+        }
+      }
+    },
+
+    "TensorSchema": {
+      "type": "object",
+      "required": ["shape", "dtype"],
+      "additionalProperties": false,
+      "properties": {
+        "shape": {
+          "type": "array",
+          "items": { "type": ["integer", "string"] },
+          "description": "Tensor dimensions. Use string 'N' for batch, 'T' for sequence length.",
+          "examples": [["N", "T", 1], ["N", 1]]
+        },
+        "dtype": {
+          "type": "string",
+          "enum": ["float32", "float64", "float16", "int32", "int64"],
+          "description": "Data type."
+        },
+        "features": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered feature names corresponding to last dimension.",
+          "examples": [["nwm_streamflow"], ["corrected_streamflow"]]
+        },
+        "units": {
+          "type": "string",
+          "description": "Physical units of tensor values.",
+          "examples": ["m3/s", "m", "mm/hr"]
+        }
+      }
+    },
+
+    "Evaluation": {
+      "type": "object",
+      "required": ["metrics", "splitUsed"],
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "nse": { "type": "number", "maximum": 1.0, "description": "Nash-Sutcliffe Efficiency." },
+            "rmse": { "type": "number", "minimum": 0, "description": "Root Mean Square Error." },
+            "kge": { "type": "number", "maximum": 1.0, "description": "Kling-Gupta Efficiency." },
+            "pbias": { "type": "number", "description": "Percent Bias." },
+            "mae": { "type": "number", "minimum": 0, "description": "Mean Absolute Error." },
+            "r2": { "type": "number", "maximum": 1.0, "description": "R-squared." },
+            "precision": { "type": "number", "minimum": 0, "maximum": 1 },
+            "recall": { "type": "number", "minimum": 0, "maximum": 1 },
+            "f1": { "type": "number", "minimum": 0, "maximum": 1 },
+            "csi": { "type": "number", "minimum": 0, "maximum": 1, "description": "Critical Success Index." }
+          },
+          "additionalProperties": { "type": "number" },
+          "description": "Key-value metric results."
+        },
+        "baseline": {
+          "type": "object",
+          "additionalProperties": { "type": "number" },
+          "description": "Baseline model metrics for comparison (e.g., raw NWM)."
+        },
+        "splitUsed": {
+          "type": "string",
+          "enum": ["test", "val", "full"],
+          "description": "Which data split metrics were computed on."
+        },
+        "temporalRange": {
+          "type": "object",
+          "properties": {
+            "start": { "type": "string", "format": "date-time" },
+            "end": { "type": "string", "format": "date-time" }
+          },
+          "description": "Evaluation period."
+        },
+        "gaugeId": {
+          "type": "string",
+          "description": "USGS gauge ID or station identifier."
+        },
+        "nwmReachId": {
+          "type": "string",
+          "description": "NWM COMID / reach identifier."
+        },
+        "drainageAreaKm2": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Contributing drainage area in km²."
+        },
+        "verticalDatum": {
+          "type": "string",
+          "enum": ["NAVD88", "NGVD29", "MSL", "MLLW", "Local"],
+          "description": "Vertical reference datum for water level values."
+        },
+        "tidalInfluence": {
+          "type": "boolean",
+          "description": "Whether gauge is tidally influenced."
+        },
+        "gridResolutionM": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Spatial resolution of prediction grid in meters."
+        },
+        "returnPeriod": {
+          "type": "string",
+          "description": "Return period (e.g., 100-year)."
+        },
+        "reservoirId": {
+          "type": "string",
+          "description": "Reservoir identifier."
+        },
+        "damId": {
+          "type": "string",
+          "description": "Dam identifier."
+        },
+        "operatingRules": {
+          "type": "string",
+          "description": "Operating rules the model was trained under."
+        }
+      }
+    },
+
+    "Execution": {
+      "type": "object",
+      "required": ["runtime"],
+      "additionalProperties": false,
+      "properties": {
+        "runtime": {
+          "type": "string",
+          "enum": ["numpy", "pytorch", "tensorflow", "onnx", "webgpu", "tensorflowjs", "coreml"],
+          "description": "Target inference runtime."
+        },
+        "minMemoryMB": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum memory for inference (MB)."
+        },
+        "quantization": {
+          "type": "string",
+          "enum": ["none", "fp16", "int8", "int4"],
+          "description": "Quantization level."
+        },
+        "webgpuCompat": {
+          "type": "boolean",
+          "description": "Whether model is WebGPU-executable in-browser."
+        },
+        "onnxOpset": {
+          "type": "integer",
+          "minimum": 7,
+          "description": "ONNX opset version."
+        },
+        "inferenceLatencyMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Measured inference latency on reference hardware."
+        }
+      }
+    },
+
+    "PrivacyAttestation": {
+      "type": "object",
+      "required": ["trainedLocally", "dataTransmitted", "attestationMethod", "attestedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "trainedLocally": {
+          "type": "boolean",
+          "description": "Asserts training executed entirely on-device."
+        },
+        "dataTransmitted": {
+          "type": "boolean",
+          "description": "Asserts whether training data left the device. Must be false for local attestation."
+        },
+        "attestationMethod": {
+          "type": "string",
+          "enum": ["self_declared", "platform_verified", "tee_attested"],
+          "description": "How attestation was generated."
+        },
+        "platformId": {
+          "type": "string",
+          "description": "ID of the training platform."
+        },
+        "datasetHash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA-256 hash of training data."
+        },
+        "weightsHash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA-256 hash of exported weight artifact."
+        },
+        "attestedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of attestation."
+        },
+        "compliance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["FISMA", "CISA", "GDPR", "CCPA", "HIPAA", "FERPA"]
+          },
+          "description": "Regulatory frameworks satisfied."
+        }
+      },
+      "if": {
+        "properties": { "trainedLocally": { "const": true } }
+      },
+      "then": {
+        "properties": { "dataTransmitted": { "const": false } }
+      }
+    },
+
+    "Weights": {
+      "type": "object",
+      "required": ["format", "uri"],
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["numpy_npz", "pytorch_pt", "tensorflow_savedmodel", "onnx", "safetensors", "json"],
+          "description": "Weight serialization format."
+        },
+        "uri": {
+          "type": "string",
+          "description": "Location of weight file (relative path, URL, or data URI)."
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA-256 hash for integrity verification."
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Weight file size in bytes."
+        }
+      }
+    },
+
+    "Metadata": {
+      "type": "object",
+      "required": ["license"],
+      "additionalProperties": false,
+      "properties": {
+        "provider": { "type": "string", "description": "Model publisher/creator." },
+        "license": { "type": "string", "description": "Usage license (e.g., MIT, Apache-2.0, CC-BY-4.0)." },
+        "contact": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "url": { "type": "string", "format": "uri" }
+          }
+        },
+        "provenance": { "type": "string", "description": "Lineage or processing history." },
+        "termsOfUse": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "title": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+
+    "Link": {
+      "type": "object",
+      "required": ["rel", "href"],
+      "properties": {
+        "rel": { "type": "string" },
+        "href": { "type": "string", "format": "uri" },
+        "type": { "type": "string" },
+        "title": { "type": "string" }
+      }
+    }
+  }
+}

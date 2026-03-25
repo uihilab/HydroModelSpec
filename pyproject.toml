@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "hydromodelspec"
+version = "1.0.0"
+description = "A vendor-neutral specification for portable, privacy-preserving ML model exchange in operational hydrology."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.8"
+authors = [
+    {name = "Nikhil Singh", email = "nsingh4@tulane.edu"},
+    {name = "Yusuf Sermet", email = "ysermet@tulane.edu"},
+    {name = "Ramteja Sajja", email = "rsajja@tulane.edu"},
+    {name = "Ibrahim Demir", email = "idemir@tulane.edu"},
+]
+keywords = [
+    "hydrology", "machine-learning", "model-exchange", "interoperability",
+    "privacy", "json-schema", "NWM", "streamflow", "forecasting",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Hydrology",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "jsonschema>=4.20.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov"]
+
+[project.urls]
+Homepage = "https://github.com/hydromodelspec/hydromodelspec"
+Documentation = "https://hydromodelspec.org"
+Repository = "https://github.com/hydromodelspec/hydromodelspec"
+
+[project.scripts]
+hms-validate = "validator.validate:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

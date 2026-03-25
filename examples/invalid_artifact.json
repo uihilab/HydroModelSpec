@@ -1,0 +1,59 @@
+{
+  "id": "bad-model-no-prefix",
+  "specVersion": "wrong-format",
+  "name": "Intentionally Invalid Artifact",
+  "createdAt": "2025-03-01T10:00:00Z",
+  "updatedAt": "2025-02-01T10:00:00Z",
+
+  "architecture": {
+    "type": "InvalidType"
+  },
+
+  "training": {
+    "optimizer": "Adam",
+    "learningRate": 0.001,
+    "epochs": 10,
+    "lossFunction": "MSE",
+    "dataSplit": {
+      "train": 0.5,
+      "val": 0.2,
+      "test": 0.1,
+      "method": "chronological"
+    },
+    "datasetHash": "not-a-valid-hash"
+  },
+
+  "inputSchema": {
+    "shape": ["N", 10],
+    "dtype": "float32"
+  },
+
+  "outputSchema": {
+    "shape": ["N", 1],
+    "dtype": "float32"
+  },
+
+  "evaluation": {
+    "metrics": {
+      "nse": 1.5,
+      "rmse": -100
+    },
+    "splitUsed": "test"
+  },
+
+  "privacy": {
+    "trainedLocally": true,
+    "dataTransmitted": true,
+    "attestationMethod": "platform_verified",
+    "attestedAt": "2025-03-01T10:00:00Z"
+  },
+
+  "weights": {
+    "format": "numpy_npz",
+    "uri": "weights/bad_model.npz"
+  },
+
+  "metadata": {
+    "license": "MIT"
+  }
+}

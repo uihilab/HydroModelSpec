@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.hydromodelspec.org/hms-inundation/1.0/inundation.schema.json",
+  "title": "HydroModelSpec Flood Inundation Profile",
+  "description": "Domain profile for flood inundation prediction models (binary/probabilistic grids).",
+  "allOf": [
+    { "$ref": "../core/core.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "specVersion": {
+          "type": "string",
+          "pattern": "^hms-inundation@\\d+\\.\\d+$"
+        },
+        "evaluation": {
+          "type": "object",
+          "required": ["metrics", "splitUsed"],
+          "properties": {
+            "metrics": {
+              "type": "object",
+              "required": ["precision", "recall", "f1", "csi"],
+              "properties": {
+                "precision": { "type": "number", "minimum": 0, "maximum": 1 },
+                "recall": { "type": "number", "minimum": 0, "maximum": 1 },
+                "f1": { "type": "number", "minimum": 0, "maximum": 1 },
+                "csi": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            },
+            "gridResolutionM": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Spatial resolution of inundation grid in meters."
+            },
+            "returnPeriod": {
+              "type": "string",
+              "description": "Return period of the flood event (e.g., 100-year)."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

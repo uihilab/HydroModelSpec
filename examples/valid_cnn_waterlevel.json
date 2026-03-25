@@ -1,0 +1,104 @@
+{
+  "id": "hms-cnn-waterlevel-tidegage-001",
+  "specVersion": "hms-waterlevel@1.0",
+  "name": "1D-CNN Water Level Forecaster — Coastal Tide Gauge",
+  "description": "Compact 1D convolutional network for 6-hour-ahead water level prediction at a tidally-influenced coastal gauge. Trained on-device via WebGPU-accelerated browser execution.",
+  "createdAt": "2025-03-10T08:00:00Z",
+  "updatedAt": "2025-03-10T08:05:00Z",
+
+  "architecture": {
+    "type": "CNN",
+    "variant": "1D-Conv3Layer",
+    "kernelSize": 5,
+    "numLayers": 3,
+    "totalParams": 12340,
+    "framework": "NumPy",
+    "layers": [
+      { "type": "Conv1D", "filters": 32, "kernelSize": 5, "activation": "relu" },
+      { "type": "Conv1D", "filters": 16, "kernelSize": 3, "activation": "relu" },
+      { "type": "Conv1D", "filters": 8, "kernelSize": 3, "activation": "relu" },
+      { "type": "Flatten" },
+      { "type": "Dense", "units": 1, "activation": "linear" }
+    ]
+  },
+
+  "training": {
+    "optimizer": "Adam",
+    "learningRate": 0.0005,
+    "epochs": 50,
+    "batchSize": 32,
+    "lossFunction": "MSE",
+    "sequenceLength": 72,
+    "dataSplit": {
+      "train": 0.70,
+      "val": 0.15,
+      "test": 0.15,
+      "method": "chronological"
+    },
+    "startedAt": "2025-03-10T07:50:00Z",
+    "completedAt": "2025-03-10T07:58:00Z",
+    "hardware": "Chrome 122, Intel i7-12700H, integrated GPU",
+    "executionEnv": "webgpu_browser"
+  },
+
+  "inputSchema": {
+    "shape": ["N", 72, 1],
+    "dtype": "float32",
+    "features": ["water_level_m"],
+    "units": "m"
+  },
+
+  "outputSchema": {
+    "shape": ["N", 1],
+    "dtype": "float32",
+    "features": ["predicted_water_level_m"],
+    "units": "m"
+  },
+
+  "evaluation": {
+    "metrics": {
+      "rmse": 0.042,
+      "mae": 0.031,
+      "r2": 0.94
+    },
+    "splitUsed": "test",
+    "verticalDatum": "NAVD88",
+    "tidalInfluence": true
+  },
+
+  "execution": {
+    "runtime": "webgpu",
+    "minMemoryMB": 32,
+    "quantization": "none",
+    "webgpuCompat": true,
+    "inferenceLatencyMs": 0.8
+  },
+
+  "privacy": {
+    "trainedLocally": true,
+    "dataTransmitted": false,
+    "attestationMethod": "platform_verified",
+    "platformId": "hydrolabai-v1.0",
+    "attestedAt": "2025-03-10T08:05:00Z",
+    "compliance": ["FISMA"]
+  },
+
+  "weights": {
+    "format": "json",
+    "uri": "weights/cnn_waterlevel_tidegage.json",
+    "hash": "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    "sizeBytes": 98720
+  },
+
+  "metadata": {
+    "provider": "Hydro Lab AI / Tulane University",
+    "license": "Apache-2.0",
+    "contact": {
+      "name": "Nikhil Singh",
+      "email": "nsingh4@tulane.edu"
+    },
+    "provenance": "Trained in-browser via Hydro Lab AI WebGPU execution path."
+  },
+
+  "keywords": ["water-level", "CNN", "coastal", "tidal", "WebGPU", "browser-trained"]
+}

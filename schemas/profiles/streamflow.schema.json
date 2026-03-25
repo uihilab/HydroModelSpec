@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.hydromodelspec.org/hms-streamflow/1.0/streamflow.schema.json",
+  "title": "HydroModelSpec Streamflow Post-Processing Profile",
+  "description": "Domain profile for NWM streamflow post-processing models. Extends core schema with required hydrological metrics and gauge metadata.",
+  "allOf": [
+    { "$ref": "../core/core.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "specVersion": {
+          "type": "string",
+          "pattern": "^hms-streamflow@\\d+\\.\\d+$"
+        },
+        "evaluation": {
+          "type": "object",
+          "required": ["metrics", "splitUsed"],
+          "properties": {
+            "metrics": {
+              "type": "object",
+              "required": ["nse", "rmse", "kge", "pbias"],
+              "properties": {
+                "nse": { "type": "number", "maximum": 1.0 },
+                "rmse": { "type": "number", "minimum": 0 },
+                "kge": { "type": "number", "maximum": 1.0 },
+                "pbias": { "type": "number" }
+              }
+            },
+            "baseline": {
+              "type": "object",
+              "description": "Raw NWM baseline metrics for comparison."
+            },
+            "gaugeId": {
+              "type": "string",
+              "description": "USGS gauge site number."
+            },
+            "nwmReachId": {
+              "type": "string",
+              "description": "NWM COMID / reach identifier."
+            },
+            "drainageAreaKm2": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Contributing drainage area in km²."
+            }
+          }
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "features": {
+              "type": "array",
+              "contains": { "const": "nwm_streamflow" },
+              "description": "Must include nwm_streamflow as input feature."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

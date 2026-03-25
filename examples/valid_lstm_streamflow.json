@@ -1,0 +1,142 @@
+{
+  "id": "hms-lstm-belle-chasse-20250215",
+  "specVersion": "hms-streamflow@1.0",
+  "name": "LSTM Streamflow Post-Processor — Belle Chasse, LA",
+  "description": "Single-layer LSTM trained to correct NWM v3 retrospective streamflow predictions at USGS gauge 07374525 (Mississippi River at Belle Chasse, LA). Trained entirely on-device using Hydro Lab AI's framework-free NumPy execution engine.",
+  "createdAt": "2025-02-15T14:30:00Z",
+  "updatedAt": "2025-02-15T14:32:00Z",
+
+  "architecture": {
+    "type": "LSTM",
+    "variant": "SingleLayer",
+    "hiddenSize": 32,
+    "numLayers": 1,
+    "totalParams": 4481,
+    "framework": "NumPy",
+    "layers": [
+      { "type": "LSTM", "units": 32, "activation": "tanh" },
+      { "type": "Dense", "units": 1, "activation": "linear" }
+    ]
+  },
+
+  "training": {
+    "optimizer": "Adam",
+    "learningRate": 0.001,
+    "epochs": 30,
+    "batchSize": 1,
+    "lossFunction": "MSE",
+    "gradientClipping": 1.0,
+    "sequenceLength": 168,
+    "dataSplit": {
+      "train": 0.70,
+      "val": 0.15,
+      "test": 0.15,
+      "method": "chronological"
+    },
+    "datasetHash": "sha256:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+    "datasetRef": "https://hydroshare.org/resource/belle-chasse-nwm-usgs-2022",
+    "startedAt": "2025-02-15T14:28:00Z",
+    "completedAt": "2025-02-15T14:29:05Z",
+    "hardware": "Apple M1, 8 GB RAM",
+    "executionEnv": "local_cpu"
+  },
+
+  "inputSchema": {
+    "shape": ["N", "T", 1],
+    "dtype": "float64",
+    "features": ["nwm_streamflow"],
+    "units": "m3/s"
+  },
+
+  "outputSchema": {
+    "shape": ["N", 1],
+    "dtype": "float64",
+    "features": ["corrected_streamflow"],
+    "units": "m3/s"
+  },
+
+  "evaluation": {
+    "metrics": {
+      "nse": 0.858,
+      "rmse": 740.0,
+      "kge": 0.844,
+      "pbias": -1.8
+    },
+    "baseline": {
+      "nse": 0.361,
+      "rmse": 1567.0,
+      "kge": 0.896,
+      "pbias": 7.8
+    },
+    "splitUsed": "test",
+    "temporalRange": {
+      "start": "2022-05-25T00:00:00Z",
+      "end": "2022-06-30T00:00:00Z"
+    },
+    "gaugeId": "07374525",
+    "nwmReachId": "22811792",
+    "drainageAreaKm2": 2914520.0
+  },
+
+  "execution": {
+    "runtime": "numpy",
+    "minMemoryMB": 64,
+    "quantization": "none",
+    "webgpuCompat": false,
+    "inferenceLatencyMs": 2.5
+  },
+
+  "privacy": {
+    "trainedLocally": true,
+    "dataTransmitted": false,
+    "attestationMethod": "platform_verified",
+    "platformId": "hydrolabai-v1.0",
+    "datasetHash": "sha256:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+    "weightsHash": "sha256:f1e2d3c4b5a6f1e2d3c4b5a6f1e2d3c4b5a6f1e2d3c4b5a6f1e2d3c4b5a6f1e2",
+    "attestedAt": "2025-02-15T14:32:00Z",
+    "compliance": ["FISMA", "CISA"]
+  },
+
+  "weights": {
+    "format": "numpy_npz",
+    "uri": "weights/lstm_belle_chasse_20250215.npz",
+    "hash": "sha256:f1e2d3c4b5a6f1e2d3c4b5a6f1e2d3c4b5a6f1e2d3c4b5a6f1e2d3c4b5a6f1e2",
+    "sizeBytes": 35840
+  },
+
+  "metadata": {
+    "provider": "Hydro Lab AI / Tulane University",
+    "license": "Apache-2.0",
+    "contact": {
+      "name": "Nikhil Singh",
+      "email": "nsingh4@tulane.edu",
+      "url": "https://github.com/hydromodelspec"
+    },
+    "provenance": "Model trained using Hydro Lab AI platform v1.0 framework-free NumPy execution engine. NWM v3 retrospective data paired with USGS NWIS instantaneous values.",
+    "title": "LSTM Post-Processor for Belle Chasse, LA",
+    "description": "Corrects NWM systematic biases at Mississippi River gauge using learned error patterns."
+  },
+
+  "links": [
+    {
+      "rel": "dataset",
+      "href": "https://waterservices.usgs.gov/nwis/iv/?sites=07374525",
+      "title": "USGS Gauge Data"
+    },
+    {
+      "rel": "platform",
+      "href": "https://hydroinformatics.tulane.edu/lab/hydro-ai-hub/",
+      "title": "Hydro Lab AI Platform"
+    },
+    {
+      "rel": "source",
+      "href": "https://github.com/uihilab/AI-HYDRO-HUB",
+      "title": "Hydro Lab AI Source Code"
+    }
+  ],
+
+  "keywords": [
+    "streamflow", "post-processing", "LSTM", "NWM", "Mississippi River",
+    "Belle Chasse", "privacy-preserving", "local-training"
+  ]
+}

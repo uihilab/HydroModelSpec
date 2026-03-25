@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.hydromodelspec.org/hms-reservoir/1.0/reservoir.schema.json",
+  "title": "HydroModelSpec Reservoir Operations Profile",
+  "description": "Domain profile for reservoir inflow/release prediction models.",
+  "allOf": [
+    { "$ref": "../core/core.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "specVersion": {
+          "type": "string",
+          "pattern": "^hms-reservoir@\\d+\\.\\d+$"
+        },
+        "evaluation": {
+          "type": "object",
+          "required": ["metrics", "splitUsed"],
+          "properties": {
+            "metrics": {
+              "type": "object",
+              "required": ["rmse"],
+              "properties": {
+                "rmse": { "type": "number", "minimum": 0 },
+                "r2": { "type": "number", "maximum": 1.0 },
+                "nse": { "type": "number", "maximum": 1.0 }
+              }
+            },
+            "reservoirId": {
+              "type": "string",
+              "description": "Reservoir identifier (NID, USACE, or local ID)."
+            },
+            "damId": {
+              "type": "string",
+              "description": "Dam identifier."
+            },
+            "operatingRules": {
+              "type": "string",
+              "description": "Description of operating rules the model was trained under."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

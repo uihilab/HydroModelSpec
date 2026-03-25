@@ -1,0 +1,20 @@
+{
+  "id": "hms-minimal-001",
+  "specVersion": "hms-core@1.0",
+  "name": "Minimal Valid Artifact",
+  "createdAt": "2025-01-01T00:00:00Z",
+  "updatedAt": "2025-01-01T00:00:00Z",
+  "architecture": { "type": "LSTM" },
+  "training": {
+    "optimizer": "Adam",
+    "learningRate": 0.001,
+    "epochs": 1,
+    "lossFunction": "MSE",
+    "dataSplit": { "train": 0.7, "val": 0.15, "test": 0.15, "method": "chronological" }
+  },
+  "inputSchema": { "shape": ["N", 10, 1], "dtype": "float32" },
+  "outputSchema": { "shape": ["N", 1], "dtype": "float32" },
+  "evaluation": { "metrics": { "rmse": 100.0 }, "splitUsed": "test" },
+  "weights": { "format": "numpy_npz", "uri": "weights/minimal.npz" },
+  "metadata": { "license": "MIT" }
+}
